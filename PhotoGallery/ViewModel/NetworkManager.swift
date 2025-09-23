@@ -14,7 +14,7 @@ class NetworkManager: ObservableObject {
     private var cancellables = Set<AnyCancellable>()
     
     func fetchPhotos() {
-        guard let url = URL(string: "https://picsum.photos/v2/list?page=1&limit=51") else { return }
+        guard let url = URL(string: "https://picsum.photos/v2/list?page=1&limit=52") else { return }
         
         URLSession.shared.dataTaskPublisher(for: url)
             .map { $0.data }

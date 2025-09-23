@@ -19,24 +19,29 @@ struct ContentView: View {
     ]
     
     var body: some View {
-        NavigationView {
-            ScrollView {
-                LazyVGrid(columns: columns, spacing: 10) {
-                    ForEach(networkManager.photos) { photo in
-                        NavigationLink(destination: FullScreenView(photo: photo)) {
-                            KFImage(URL(string: photo.download_url))
-                                .placeholder {
-                                    ProgressView()
-                                }
-                                .resizable()
-                                .scaledToFill()
-                                .clipped()
-                                .cornerRadius(4)
+        NavigationStack {
+            GeometryReader { geometry in
+                ScrollView {
+                    LazyVGrid(columns: columns, spacing: 8) {
+                        ForEach(networkManager.photos) { photo in
+                            NavigationLink(destination: FullScreenView(photo: photo)) {
+                                KFImage(URL(string: photo.download_url))
+                                    .placeholder {
+                                        ProgressView()
+                                    }
+                                    .resizable()
+                                    .scaledToFill()
+                                    .frame(width: geometry.size.width / 3 - 12,
+                                           height: geometry.size.width / 3 - 12
+                                    )
+                                    .clipped()
+                                    .cornerRadius(4)
+                            }
                         }
                     }
+                    .padding(.horizontal, 8)
+                    .padding(.top, 8)
                 }
-                .padding(.horizontal, 12)
-                .padding(.top, 8)
             }
             .navigationTitle("Photo Gallery")
             .onAppear {
@@ -49,4 +54,3 @@ struct ContentView: View {
 #Preview {
     ContentView()
 }
-

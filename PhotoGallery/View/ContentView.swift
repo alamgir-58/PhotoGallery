@@ -21,7 +21,7 @@ struct ContentView: View {
     var body: some View {
         NavigationView {
             ScrollView {
-                LazyVGrid(columns: columns, spacing: 16) {
+                LazyVGrid(columns: columns, spacing: 10) {
                     ForEach(networkManager.photos) { photo in
                         NavigationLink(destination: FullScreenView(photo: photo)) {
                             KFImage(URL(string: photo.download_url))

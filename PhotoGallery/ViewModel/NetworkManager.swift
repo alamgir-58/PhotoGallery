@@ -12,9 +12,10 @@ class NetworkManager: ObservableObject {
     
     @Published var photos = [Photo]()
     private var cancellables = Set<AnyCancellable>()
+    private let photosURLString = "https://picsum.photos/v2/list?page=1&limit=101"
     
     func fetchPhotos() {
-        guard let url = URL(string: "https://picsum.photos/v2/list?page=1&limit=101") else { return }
+        guard let url = URL(string: photosURLString) else { return }
         
         URLSession.shared.dataTaskPublisher(for: url)
             .map { $0.data }

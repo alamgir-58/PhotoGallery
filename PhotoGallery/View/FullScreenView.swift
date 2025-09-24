@@ -7,6 +7,39 @@
 
 import SwiftUI
 import Kingfisher
+import UIKit
+import LinkPresentation
+
+final class ImageShareItem: NSObject, UIActivityItemSource {
+    let image: UIImage
+    init(image: UIImage) { self.image = image }
+    
+    func activityViewControllerPlaceholderItem(_ activityViewController: UIActivityViewController) -> Any {
+        image
+    }
+    
+    func activityViewController(_ activityViewController: UIActivityViewController,
+                                itemForActivityType activityType: UIActivity.ActivityType?) -> Any? { image
+    }
+    
+    func activityViewControllerLinkMetadata(_ activityViewController: UIActivityViewController) -> LPLinkMetadata? {
+        let metadata = LPLinkMetadata()
+        metadata.title = "Photo"
+        metadata.imageProvider = NSItemProvider(object: image)
+        return metadata
+    }
+}
+
+struct ActivityView: UIViewControllerRepresentable {
+    let activityItems: [Any]
+    var applicationActivities: [UIActivity]? = nil
+    
+    func makeUIViewController(context: Context) -> UIActivityViewController {
+        UIActivityViewController(activityItems: activityItems, applicationActivities: applicationActivities)
+    }
+    
+    func updateUIViewController(_ uiViewController: UIActivityViewController, context: Context) {}
+}
 
 struct FullScreenView: View {
     let photo: Photo
@@ -16,6 +49,9 @@ struct FullScreenView: View {
     @State private var baseOffset: CGSize = .zero
     @State private var dragOffset: CGSize = .zero
     
+    @State private var isSharePresented = false
+    @State private var shareItems: [Any] = []
+    
     var body: some View {
         ZStack {
             KFImage(URL(string: photo.download_url))
@@ -23,8 +59,9 @@ struct FullScreenView: View {
                 .resizable()
                 .scaledToFit()
                 .scaleEffect(baseScale * pinchScale)
-                .offset(x: baseOffset.width + dragOffset.width,
-                        y: baseOffset.height + dragOffset.height
+                .offset(
+                    x: baseOffset.width + dragOffset.width,
+                    y: baseOffset.height + dragOffset.height
                 )
                 .gesture(
                     MagnificationGesture()
@@ -63,9 +100,37 @@ struct FullScreenView: View {
         }
         .navigationBarTitleDisplayMode(.inline)
         .navigationTitle("Photo")
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button {
+                    shareCurrentPhoto()
+                } label: {
+                    Image(systemName: "square.and.arrow.up")
+                }
+            }
+        }
+        .sheet(isPresented: $isSharePresented) {
+            ActivityView(activityItems: shareItems)
+        }
     }
     
     private func clamp(_ v: CGFloat, _ minV: CGFloat, _ maxV: CGFloat) -> CGFloat {
         Swift.min(Swift.max(v, minV), maxV)
+    }
+    
+    private func shareCurrentPhoto() {
+        guard let url = URL(string: photo.download_url) else { return }
+        KingfisherManager.shared.retrieveImage(with: url) { result in
+            Task { @MainActor in
+                switch result {
+                case .success(let value):
+                    shareItems = [ImageShareItem(image: value.image)]
+                    isSharePresented = true
+                case .failure:
+                    shareItems = [url]
+                    isSharePresented = true
+                }
+            }
+        }
     }
 }

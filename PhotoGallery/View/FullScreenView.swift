@@ -9,49 +9,53 @@ import SwiftUI
 import Kingfisher
 import UIKit
 import LinkPresentation
+import Photos
 
 final class ImageShareItem: NSObject, UIActivityItemSource {
     let image: UIImage
-    init(image: UIImage) { self.image = image }
-    
-    func activityViewControllerPlaceholderItem(_ activityViewController: UIActivityViewController) -> Any {
-        image
+    let title: String
+    init(image: UIImage, title: String = "Photo") {
+        self.image = image
+        self.title = title
     }
-    
-    func activityViewController(_ activityViewController: UIActivityViewController,
-                                itemForActivityType activityType: UIActivity.ActivityType?) -> Any? { image
-    }
-    
-    func activityViewControllerLinkMetadata(_ activityViewController: UIActivityViewController) -> LPLinkMetadata? {
-        let metadata = LPLinkMetadata()
-        metadata.title = "Photo"
-        metadata.imageProvider = NSItemProvider(object: image)
-        return metadata
+    func activityViewControllerPlaceholderItem(_ vc: UIActivityViewController) -> Any { image }
+    func activityViewController(_ vc: UIActivityViewController,
+                                itemForActivityType type: UIActivity.ActivityType?) -> Any? { image }
+    func activityViewControllerLinkMetadata(_ vc: UIActivityViewController) -> LPLinkMetadata? {
+        let meta = LPLinkMetadata()
+        meta.title = title
+        meta.imageProvider = NSItemProvider(object: image)
+        return meta
     }
 }
 
 struct ActivityView: UIViewControllerRepresentable {
     let activityItems: [Any]
     var applicationActivities: [UIActivity]? = nil
-    
+    var excludedActivityTypes: [UIActivity.ActivityType] = []
+
     func makeUIViewController(context: Context) -> UIActivityViewController {
-        UIActivityViewController(activityItems: activityItems, applicationActivities: applicationActivities)
+        let vc = UIActivityViewController(activityItems: activityItems, applicationActivities: applicationActivities)
+        vc.excludedActivityTypes = excludedActivityTypes
+        return vc
     }
-    
     func updateUIViewController(_ uiViewController: UIActivityViewController, context: Context) {}
 }
 
 struct FullScreenView: View {
     let photo: Photo
-    
+
     @State private var baseScale: CGFloat = 1
     @State private var pinchScale: CGFloat = 1
     @State private var baseOffset: CGSize = .zero
     @State private var dragOffset: CGSize = .zero
-    
+
     @State private var isSharePresented = false
     @State private var shareItems: [Any] = []
-    
+
+    @State private var isAlertShown = false
+    @State private var alertMessage = ""
+
     var body: some View {
         ZStack {
             KFImage(URL(string: photo.download_url))
@@ -69,9 +73,7 @@ struct FullScreenView: View {
                         .onEnded { _ in
                             baseScale = clamp(baseScale * pinchScale, 1, 4)
                             pinchScale = 1
-                            if baseScale == 1 {
-                                baseOffset = .zero
-                            }
+                            if baseScale == 1 { baseOffset = .zero }
                         }
                 )
                 .simultaneousGesture(
@@ -107,28 +109,80 @@ struct FullScreenView: View {
                 } label: {
                     Image(systemName: "square.and.arrow.up")
                 }
+                .accessibilityLabel("Share")
+            }
+            ToolbarItem(placement: .topBarTrailing) {
+                Button {
+                    saveCurrentPhoto()
+                } label: {
+                    Image(systemName: "arrow.down.to.line")
+                }
+                .accessibilityLabel("Save to Gallery")
             }
         }
         .sheet(isPresented: $isSharePresented) {
             ActivityView(activityItems: shareItems)
         }
+        .alert("Photo", isPresented: $isAlertShown) {
+            Button("OK", role: .cancel) { }
+        } message: {
+            Text(alertMessage)
+        }
     }
-    
+
     private func clamp(_ v: CGFloat, _ minV: CGFloat, _ maxV: CGFloat) -> CGFloat {
         Swift.min(Swift.max(v, minV), maxV)
     }
-    
+
     private func shareCurrentPhoto() {
         guard let url = URL(string: photo.download_url) else { return }
         KingfisherManager.shared.retrieveImage(with: url) { result in
             Task { @MainActor in
                 switch result {
                 case .success(let value):
-                    shareItems = [ImageShareItem(image: value.image)]
+                    shareItems = [ImageShareItem(image: value.image, title: "Photo")]
                     isSharePresented = true
                 case .failure:
                     shareItems = [url]
                     isSharePresented = true
+                }
+            }
+        }
+    }
+
+    private func saveCurrentPhoto() {
+        guard let url = URL(string: photo.download_url) else { return }
+
+        KingfisherManager.shared.retrieveImage(with: url) { result in
+            switch result {
+            case .success(let value):
+                let image = value.image
+                PHPhotoLibrary.requestAuthorization(for: .addOnly) { status in
+                    guard status == .authorized || status == .limited else {
+                        Task { @MainActor in
+                            alertMessage = "Please allow photo access to save."
+                            isAlertShown = true
+                        }
+                        return
+                    }
+                    PHPhotoLibrary.shared().performChanges({
+                        PHAssetChangeRequest.creationRequestForAsset(from: image)
+                    }) { success, error in
+                        Task { @MainActor in
+                            if success {
+                                alertMessage = "Saved to Photos ✅"
+                            } else {
+                                alertMessage = "Failed to save: \(error?.localizedDescription ?? "Unknown error")"
+                            }
+                            isAlertShown = true
+                        }
+                    }
+                }
+
+            case .failure(let err):
+                Task { @MainActor in
+                    alertMessage = "Couldn't load image: \(err.localizedDescription)"
+                    isAlertShown = true
                 }
             }
         }

@@ -8,29 +8,79 @@
 import XCTest
 @testable import PhotoGallery
 
-final class PhotoGalleryTests: XCTestCase {
+final class ZoomStateTests: XCTestCase {
 
-    override func setUpWithError() throws {
-        // Put setup code here. This method is called before the invocation of each test method in the class.
+    func testCurrentScaleAndOffset() {
+        var zoom = ZoomState()
+        zoom.baseScale = 2
+        zoom.pinchScale = 1.5
+        zoom.baseOffset = CGSize(width: 10, height: -5)
+        zoom.dragOffset = CGSize(width: 3, height: 7)
+
+        XCTAssertEqual(zoom.currentScale, 3.0, accuracy: CGFloat(0.0001))
+        XCTAssertEqual(zoom.currentOffset.width, 13.0, accuracy: CGFloat(0.0001))
+        XCTAssertEqual(zoom.currentOffset.height, 2.0, accuracy: CGFloat(0.0001))
     }
 
-    override func tearDownWithError() throws {
-        // Put teardown code here. This method is called after the invocation of each test method in the class.
+    func testEndPinchClampsToMaxAndResetsPinch() {
+        var zoom = ZoomState()
+        zoom.baseScale = 2
+        zoom.pinchScale = 3
+        zoom.endPinch(min: 1, max: 4)
+
+        XCTAssertEqual(zoom.baseScale, 4.0, accuracy: CGFloat(0.0001))
+        XCTAssertEqual(zoom.pinchScale, 1.0, accuracy: CGFloat(0.0001))
+        XCTAssertEqual(zoom.baseOffset, .zero)
     }
 
-    func testExample() throws {
-        // This is an example of a functional test case.
-        // Use XCTAssert and related functions to verify your tests produce the correct results.
-        // Any test you write for XCTest can be annotated as throws and async.
-        // Mark your test throws to produce an unexpected failure when your test encounters an uncaught error.
-        // Mark your test async to allow awaiting for asynchronous code to complete. Check the results with assertions afterwards.
+    func testEndPinchClampsToMinAndResetsOffsetWhenBackToOne() {
+        var zoom = ZoomState()
+        zoom.baseScale = 2
+        zoom.baseOffset = CGSize(width: 50, height: -40)
+        zoom.pinchScale = 0.3
+
+        zoom.endPinch(min: 1, max: 4)
+
+        XCTAssertEqual(zoom.baseScale, 1.0, accuracy: CGFloat(0.0001))
+        XCTAssertEqual(zoom.pinchScale, 1.0, accuracy: CGFloat(0.0001))
+        XCTAssertEqual(zoom.baseOffset, .zero)
     }
 
-    func testPerformanceExample() throws {
-        // This is an example of a performance test case.
-        self.measure {
-            // Put the code you want to measure the time of here.
-        }
+    func testEndDragAccumulatesAndClearsDragOffset() {
+        var zoom = ZoomState()
+        zoom.baseOffset = CGSize(width: 10, height: 20)
+        zoom.dragOffset = CGSize(width: -3, height: 5)
+
+        zoom.endDrag()
+
+        XCTAssertEqual(zoom.baseOffset.width, 7.0, accuracy: CGFloat(0.0001))
+        XCTAssertEqual(zoom.baseOffset.height, 25.0, accuracy: CGFloat(0.0001))
+        XCTAssertEqual(zoom.dragOffset, .zero)
     }
 
+    func testToggleDoubleTapZoomInAndOut() {
+        var zoom = ZoomState()
+        XCTAssertEqual(zoom.baseScale, 1.0, accuracy: CGFloat(0.0001))
+
+        zoom.toggleDoubleTapZoom(inScale: 2.5)
+        XCTAssertEqual(zoom.baseScale, 2.5, accuracy: CGFloat(0.0001))
+        XCTAssertEqual(zoom.baseOffset, .zero)
+
+        zoom.baseOffset = CGSize(width: 30, height: -10)
+
+        zoom.toggleDoubleTapZoom(inScale: 2.5)
+        XCTAssertEqual(zoom.baseScale, 1.0, accuracy: CGFloat(0.0001))
+        XCTAssertEqual(zoom.baseOffset, .zero)
+    }
+
+    func testEndPinchWithinRange() {
+        var zoom = ZoomState()
+        zoom.baseScale = 1.2
+        zoom.pinchScale = 1.3
+
+        zoom.endPinch()
+
+        XCTAssertEqual(zoom.baseScale, 1.56, accuracy: CGFloat(0.0001))
+        XCTAssertEqual(zoom.pinchScale, 1.0, accuracy: CGFloat(0.0001))
+    }
 }

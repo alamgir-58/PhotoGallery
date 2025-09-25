@@ -11,6 +11,11 @@ import UIKit
 import LinkPresentation
 import Photos
 
+struct SharePayload: Identifiable {
+    let id = UUID()
+    let items: [Any]
+}
+
 final class ImageShareItem: NSObject, UIActivityItemSource {
     let image: UIImage
     let title: String
@@ -33,7 +38,7 @@ struct ActivityView: UIViewControllerRepresentable {
     let activityItems: [Any]
     var applicationActivities: [UIActivity]? = nil
     var excludedActivityTypes: [UIActivity.ActivityType] = []
-
+    
     func makeUIViewController(context: Context) -> UIActivityViewController {
         let vc = UIActivityViewController(activityItems: activityItems, applicationActivities: applicationActivities)
         vc.excludedActivityTypes = excludedActivityTypes
@@ -44,18 +49,17 @@ struct ActivityView: UIViewControllerRepresentable {
 
 struct FullScreenView: View {
     let photo: Photo
-
+    
     @State private var baseScale: CGFloat = 1
     @State private var pinchScale: CGFloat = 1
     @State private var baseOffset: CGSize = .zero
     @State private var dragOffset: CGSize = .zero
-
-    @State private var isSharePresented = false
-    @State private var shareItems: [Any] = []
-
+    
+    @State private var sharePayload: SharePayload?
+    
     @State private var isAlertShown = false
     @State private var alertMessage = ""
-
+    
     var body: some View {
         ZStack {
             KFImage(URL(string: photo.download_url))
@@ -102,26 +106,22 @@ struct FullScreenView: View {
         }
         .navigationBarTitleDisplayMode(.inline)
         .navigationTitle("Photo")
-        .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
-                Button {
+        .safeAreaInset(edge: .bottom) {
+            HStack(spacing: 24) {
+                ActionButton(icon: "square.and.arrow.up", title: "Share") {
                     shareCurrentPhoto()
-                } label: {
-                    Image(systemName: "square.and.arrow.up")
                 }
-                .accessibilityLabel("Share")
-            }
-            ToolbarItem(placement: .topBarTrailing) {
-                Button {
+                ActionButton(icon: "arrow.down.to.line", title: "Save") {
                     saveCurrentPhoto()
-                } label: {
-                    Image(systemName: "arrow.down.to.line")
                 }
-                .accessibilityLabel("Save to Gallery")
             }
+            .padding(.vertical, 10)
+            .frame(maxWidth: .infinity)
+            .background(.thinMaterial)
         }
-        .sheet(isPresented: $isSharePresented) {
-            ActivityView(activityItems: shareItems)
+        .sheet(item: $sharePayload) { payload in
+            ActivityView(activityItems: payload.items)
+                .presentationDetents([.medium, .large]) // optional
         }
         .alert("Photo", isPresented: $isAlertShown) {
             Button("OK", role: .cancel) { }
@@ -129,30 +129,32 @@ struct FullScreenView: View {
             Text(alertMessage)
         }
     }
-
+    
     private func clamp(_ v: CGFloat, _ minV: CGFloat, _ maxV: CGFloat) -> CGFloat {
         Swift.min(Swift.max(v, minV), maxV)
     }
-
+    
     private func shareCurrentPhoto() {
         guard let url = URL(string: photo.download_url) else { return }
+        
         KingfisherManager.shared.retrieveImage(with: url) { result in
             Task { @MainActor in
                 switch result {
                 case .success(let value):
-                    shareItems = [ImageShareItem(image: value.image, title: "Photo")]
-                    isSharePresented = true
+                    sharePayload = SharePayload(items: [
+                        value.image,
+                        ImageShareItem(image: value.image, title: "Photo")
+                    ])
                 case .failure:
-                    shareItems = [url]
-                    isSharePresented = true
+                    sharePayload = SharePayload(items: [url])
                 }
             }
         }
     }
-
+    
     private func saveCurrentPhoto() {
         guard let url = URL(string: photo.download_url) else { return }
-
+        
         KingfisherManager.shared.retrieveImage(with: url) { result in
             switch result {
             case .success(let value):
@@ -178,7 +180,7 @@ struct FullScreenView: View {
                         }
                     }
                 }
-
+                
             case .failure(let err):
                 Task { @MainActor in
                     alertMessage = "Couldn't load image: \(err.localizedDescription)"
@@ -186,5 +188,27 @@ struct FullScreenView: View {
                 }
             }
         }
+    }
+}
+
+private struct ActionButton: View {
+    let icon: String
+    let title: String
+    let action: () -> Void
+    
+    var body: some View {
+        Button(action: action) {
+            VStack(spacing: 4) {
+                Image(systemName: icon)
+                    .font(.title2.weight(.semibold))
+                Text(title)
+                    .font(.footnote)
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 8)
+        }
+        .buttonStyle(.plain)
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel(Text(title))
     }
 }

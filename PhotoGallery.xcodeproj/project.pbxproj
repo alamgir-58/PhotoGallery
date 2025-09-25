@@ -7,6 +7,14 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		5311B6EF2E8526F800019E35 /* SharePayload.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5311B6EE2E8526F800019E35 /* SharePayload.swift */; };
+		5311B6F12E85273400019E35 /* ZoomState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5311B6F02E85273400019E35 /* ZoomState.swift */; };
+		5311B6F32E85276800019E35 /* ImageLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5311B6F22E85276800019E35 /* ImageLoader.swift */; };
+		5311B6F52E85278900019E35 /* PhotoSaver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5311B6F42E85278900019E35 /* PhotoSaver.swift */; };
+		5311B6F72E8527C400019E35 /* ImageShareItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5311B6F62E8527C400019E35 /* ImageShareItem.swift */; };
+		5311B6F92E85280300019E35 /* ActivityView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5311B6F82E85280300019E35 /* ActivityView.swift */; };
+		5311B6FC2E85285B00019E35 /* Numeric+Clamp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5311B6FB2E85285B00019E35 /* Numeric+Clamp.swift */; };
+		5311B6FE2E85287F00019E35 /* ActionButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5311B6FD2E85287F00019E35 /* ActionButton.swift */; };
 		531883D02E82787D007E3FD8 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 531883CB2E82787D007E3FD8 /* ContentView.swift */; };
 		531883D12E82787D007E3FD8 /* PhotoGalleryApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 531883CE2E82787D007E3FD8 /* PhotoGalleryApp.swift */; };
 		531883D22E82787D007E3FD8 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 531883C82E82787D007E3FD8 /* Assets.xcassets */; };
@@ -34,6 +42,14 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		5311B6EE2E8526F800019E35 /* SharePayload.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharePayload.swift; sourceTree = "<group>"; };
+		5311B6F02E85273400019E35 /* ZoomState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZoomState.swift; sourceTree = "<group>"; };
+		5311B6F22E85276800019E35 /* ImageLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageLoader.swift; sourceTree = "<group>"; };
+		5311B6F42E85278900019E35 /* PhotoSaver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoSaver.swift; sourceTree = "<group>"; };
+		5311B6F62E8527C400019E35 /* ImageShareItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageShareItem.swift; sourceTree = "<group>"; };
+		5311B6F82E85280300019E35 /* ActivityView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityView.swift; sourceTree = "<group>"; };
+		5311B6FB2E85285B00019E35 /* Numeric+Clamp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Numeric+Clamp.swift"; sourceTree = "<group>"; };
+		5311B6FD2E85287F00019E35 /* ActionButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActionButton.swift; sourceTree = "<group>"; };
 		531883C82E82787D007E3FD8 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		531883CB2E82787D007E3FD8 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		531883CE2E82787D007E3FD8 /* PhotoGalleryApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoGalleryApp.swift; sourceTree = "<group>"; };
@@ -84,10 +100,29 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		5311B6FA2E85282E00019E35 /* Utilities */ = {
+			isa = PBXGroup;
+			children = (
+				5311B6FB2E85285B00019E35 /* Numeric+Clamp.swift */,
+			);
+			path = Utilities;
+			sourceTree = "<group>";
+		};
+		5311B6FF2E85297300019E35 /* Sharing */ = {
+			isa = PBXGroup;
+			children = (
+				5311B6F62E8527C400019E35 /* ImageShareItem.swift */,
+				5311B6F82E85280300019E35 /* ActivityView.swift */,
+			);
+			path = Sharing;
+			sourceTree = "<group>";
+		};
 		531883C72E82787D007E3FD8 /* Model */ = {
 			isa = PBXGroup;
 			children = (
 				531883D32E8278E7007E3FD8 /* Photo.swift */,
+				5311B6EE2E8526F800019E35 /* SharePayload.swift */,
+				5311B6F02E85273400019E35 /* ZoomState.swift */,
 			);
 			path = Model;
 			sourceTree = "<group>";
@@ -103,6 +138,9 @@
 		531883CA2E82787D007E3FD8 /* Services */ = {
 			isa = PBXGroup;
 			children = (
+				5311B6FF2E85297300019E35 /* Sharing */,
+				5311B6F22E85276800019E35 /* ImageLoader.swift */,
+				5311B6F42E85278900019E35 /* PhotoSaver.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -112,6 +150,7 @@
 			children = (
 				531883CB2E82787D007E3FD8 /* ContentView.swift */,
 				531883DA2E8283DA007E3FD8 /* FullScreenView.swift */,
+				5311B6FD2E85287F00019E35 /* ActionButton.swift */,
 			);
 			path = View;
 			sourceTree = "<group>";
@@ -127,6 +166,7 @@
 		531883CF2E82787D007E3FD8 /* PhotoGallery */ = {
 			isa = PBXGroup;
 			children = (
+				5311B6FA2E85282E00019E35 /* Utilities */,
 				531883C72E82787D007E3FD8 /* Model */,
 				531883CC2E82787D007E3FD8 /* View */,
 				531883CD2E82787D007E3FD8 /* ViewModel */,
@@ -303,10 +343,18 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				5311B6F92E85280300019E35 /* ActivityView.swift in Sources */,
 				531883D62E82790A007E3FD8 /* NetworkManager.swift in Sources */,
+				5311B6FE2E85287F00019E35 /* ActionButton.swift in Sources */,
 				531883D42E8278E7007E3FD8 /* Photo.swift in Sources */,
+				5311B6EF2E8526F800019E35 /* SharePayload.swift in Sources */,
 				531883D02E82787D007E3FD8 /* ContentView.swift in Sources */,
+				5311B6FC2E85285B00019E35 /* Numeric+Clamp.swift in Sources */,
+				5311B6F12E85273400019E35 /* ZoomState.swift in Sources */,
 				531883DB2E8283DA007E3FD8 /* FullScreenView.swift in Sources */,
+				5311B6F32E85276800019E35 /* ImageLoader.swift in Sources */,
+				5311B6F52E85278900019E35 /* PhotoSaver.swift in Sources */,
+				5311B6F72E8527C400019E35 /* ImageShareItem.swift in Sources */,
 				531883D12E82787D007E3FD8 /* PhotoGalleryApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

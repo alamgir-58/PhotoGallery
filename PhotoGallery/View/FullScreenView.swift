@@ -48,8 +48,12 @@ struct FullScreenView: View {
         .navigationTitle("Photo")
         .safeAreaInset(edge: .bottom) {
             HStack(spacing: 24) {
-                ActionButton(icon: "square.and.arrow.up", title: "Share") { shareCurrentPhoto() }
-                ActionButton(icon: "arrow.down.to.line", title: "Save") { saveCurrentPhoto() }
+                ActionButton(icon: "square.and.arrow.up", title: "Share") {
+                    shareCurrentPhoto()
+                }
+                ActionButton(icon: "arrow.down.to.line", title: "Save") {
+                    saveCurrentPhoto()
+                }
             }
             .padding(.vertical, 10)
             .frame(maxWidth: .infinity)

@@ -43,7 +43,7 @@ struct ContentView: View {
                     .padding(.top, 8)
                 }
             }
-            .navigationTitle("Photo Gallery")
+            .navigationTitle("Photos")
             .onAppear {
                 networkManager.fetchPhotos()
             }

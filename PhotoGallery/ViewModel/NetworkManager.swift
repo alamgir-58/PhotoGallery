@@ -16,7 +16,6 @@ class NetworkManager: ObservableObject {
     
     func fetchPhotos() {
         guard let url = URL(string: photosURLString) else { return }
-        
         URLSession.shared.dataTaskPublisher(for: url)
             .map { $0.data }
             .decode(type: [Photo].self, decoder: JSONDecoder())
